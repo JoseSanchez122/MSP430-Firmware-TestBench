@@ -1,10 +1,3 @@
-/*
-  ------------------------------------------------------------------------|
-  |  Archivo: LCD.c                                                       |
-  |  Descripcion: Funciones para uso de LCD                               |
-  |    Autor: IMTECH DESARROLLOS (INGENIERIA DE FIRMWARE)                 |
-  |-----------------------------------------------------------------------|
-*/
 #include "msp430fr60471.h"
 #include <msp430.h>
 #include <LCD.h>
@@ -384,3 +377,76 @@ int Digits(){
 
     return count; // Devolver la cantidad de números encontrados
 }
+
+void UpdateLCDTime(){
+    //CleanLCDTime();
+    D1 = (0x80&D1)|lcd_num[(RTCHOUR & 0xF0) >> 4];
+    D2 = (0x80&D2)|lcd_num[(RTCHOUR & 0x0F)];
+    D3 = (0x80&D3)|lcd_num[(RTCMIN & 0xF0) >> 4];
+    D4 = (0x80&D4)|lcd_num[(RTCMIN & 0x0F)];
+
+    E1 = (0x80&E1)|lcd_num[(RTCDAY & 0xF0) >> 4];
+    E2 = (0x80&E2)|lcd_num[(RTCDAY & 0x0F)];
+    E3 = (0x80&E3)|lcd_num[(RTCMON & 0xF0) >> 4];
+    E4 = (0x80&E4)|lcd_num[(RTCMON & 0x0F)];
+    E5 = (0x80&E5)|lcd_num[(RTCYEAR & 0x00F0) >> 4];
+    E6 = (0x80&E6)|lcd_num[(RTCYEAR & 0x000F)];
+    LCDM9 |= 0x80;
+    LCDM16 |= 0x80;
+    LCDM18 |= 0x80;
+}
+
+void float2LCD2(float value, unit_vol unit){
+
+    //asumiendo que value es en litros
+    switch (unit) {
+        case L:
+        LCDM19|=0x80;
+        LCDM20&=~0x80;
+        LCDM21&=~0x80;
+        break;
+
+        case M3:
+          value *= 0.001;    //factor de conversion para metros cubicos
+          LCDM19&=~0x80;
+          LCDM20&=~0x80;
+          LCDM21|=0x80;
+          break;
+
+        case G:
+          value *= 0.264172; //factor de conversion para Galones estadounidense
+          LCDM19&=~0x80;
+          LCDM20|=0x80;
+          LCDM21&=~0x80;
+
+          break;
+
+
+        default:
+            break;
+  }
+
+  uint32_t integerPart = (uint32_t) value;
+  uint16_t floatPart = (uint16_t) ((10000) * (value - integerPart));
+
+
+
+  uint8_t digitCounter;
+
+
+  for(digitCounter = 0; digitCounter < 5; digitCounter++){ //only 6 digits
+
+      A_Digit(digitCounter + 4, integerPart % 10);
+      integerPart /= 10;
+  }
+
+  for(digitCounter = 0; digitCounter < 4; digitCounter++){ //only 3 digits
+
+      A_Digit(digitCounter, floatPart % 10);
+        floatPart /= 10;
+
+   }
+
+}
+
+
