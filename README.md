@@ -12,6 +12,6 @@ This repository contains the firmware for the MSP430FR60471 microcontroller, des
 - Quectel module integration
 - Ultrasonic flow measurement
 
-##Hardware
+## Hardware
 - MSP430FR60471
 - Quectel BG95
